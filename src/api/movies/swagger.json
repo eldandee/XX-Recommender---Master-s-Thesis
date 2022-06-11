@@ -1,0 +1,422 @@
+{
+    "openapi": "3.0.0",
+    "info": { "title": "Movie API", "version": "1.0.0", "description": "API for Movie App" },
+    "servers": [{ "url": "localhost:5000" }],
+    "components": {
+        "securitySchemes": { "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" } },
+        "schemas": {
+            "MessageResponseDto": {
+                "type": "object",
+                "properties": { "status": { "type": "string" }, "message": { "type": "string", "nullable": true } }
+            },
+            "ListPaginationResponseDto": {
+                "type": "object",
+                "properties": {
+                    "totalCount": { "type": "integer", "nullable": true },
+                    "pageNumber": { "type": "integer", "nullable": true },
+                    "pageSize": { "type": "integer", "nullable": true },
+                    "totalPages": { "type": "integer", "nullable": true },
+                    "hasNextPage": { "type": "boolean", "nullable": true },
+                    "hasPrevPage": { "type": "boolean", "nullable": true }
+                }
+            },
+            "MovieDto": {
+                "type": "object",
+                "properties": {
+                    "movieId": { "type": "string" },
+                    "title": { "type": "string", "nullable": true },
+                    "releaseDate": { "type": "string", "nullable": true },
+                    "posterPath": { "type": "string", "nullable": true },
+                    "genres": { "type": "array", "nullable": true, "items": { "type": "string" } }
+                }
+            },
+            "MovieDetailRatingDto": {
+                "type": "object",
+                "properties": { "_id": { "type": "string" }, "rating": { "type": "integer", "nullable": true } }
+            },
+            "PersonDto": {
+                "type": "object",
+                "properties": {
+                    "name": { "type": "string", "nullable": true },
+                    "profilePath": { "type": "string", "nullable": true },
+                    "id": { "type": "string", "nullable": true }
+                }
+            },
+            "CastPersonDto": {
+                "allOf": [
+                    { "$ref": "#/components/schemas/PersonDto" },
+                    { "type": "object", "properties": { "character": { "type": "string", "nullable": true } } }
+                ]
+            },
+            "MovieDetailResponseDto": {
+                "allOf": [
+                    { "$ref": "#/components/schemas/MovieDto" },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "backdropPath": { "type": "string", "nullable": true },
+                            "overview": { "type": "string", "nullable": true },
+                            "runtime": { "type": "integer", "nullable": true },
+                            "cast": {
+                                "type": "array",
+                                "nullable": true,
+                                "items": { "$ref": "#/components/schemas/CastPersonDto" }
+                            },
+                            "directors": {
+                                "type": "array",
+                                "nullable": true,
+                                "items": { "$ref": "#/components/schemas/PersonDto" }
+                            },
+                            "rating": { "$ref": "#/components/schemas/MovieDetailRatingDto" }
+                        }
+                    }
+                ]
+            },
+            "MoviesListResponseDto": {
+                "allOf": [
+                    { "$ref": "#/components/schemas/ListPaginationResponseDto" },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "nullable": true,
+                                "items": { "$ref": "#/components/schemas/MovieDto" }
+                            }
+                        }
+                    }
+                ]
+            },
+            "MostPopularMoviesListResponseDto": {
+                "type": "object",
+                "properties": {
+                    "items": { "type": "array", "nullable": true, "items": { "$ref": "#/components/schemas/MovieDto" } }
+                }
+            },
+            "RatingDtoRequest": {
+                "type": "object",
+                "properties": {
+                    "movieId": { "type": "string", "nullable": true },
+                    "rating": { "type": "integer", "nullable": true }
+                }
+            },
+            "UserRatingDto": {
+                "type": "object",
+                "properties": {
+                    "_id": { "type": "string" },
+                    "rating": { "type": "integer", "nullable": true },
+                    "ratedAt": { "type": "string", "nullable": true },
+                    "movieId": { "type": "string", "nullable": true },
+                    "title": { "type": "string", "nullable": true },
+                    "releaseDate": { "type": "integer", "nullable": true },
+                    "posterPath": { "type": "string", "nullable": true }
+                }
+            },
+            "UserRatingsListResponseDto": {
+                "allOf": [
+                    { "$ref": "#/components/schemas/ListPaginationResponseDto" },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "items": {
+                                "type": "array",
+                                "nullable": true,
+                                "items": { "$ref": "#/components/schemas/UserRatingDto" }
+                            }
+                        }
+                    }
+                ]
+            },
+            "UserRatingsInfoDto": {
+                "allOf": [
+                    { "type": "object", "properties": { "numberOfRatings": { "type": "integer", "nullable": true } } }
+                ]
+            },
+            "RecommendedMoviesListResponseDto": {
+                "type": "object",
+                "properties": {
+                    "items": { "type": "array", "nullable": true, "items": { "$ref": "#/components/schemas/MovieDto" } }
+                }
+            }
+        }
+    },
+    "security": [{ "bearerAuth": [] }],
+    "paths": {
+        "/movies/most-popular": {
+            "get": {
+                "summary": "Get most popular movies. - unused but kept for future use",
+                "tags": ["Movies"],
+                "parameters": [{ "in": "query", "name": "k", "schema": { "type": "integer" }, "required": true }],
+                "responses": {
+                    "200": {
+                        "description": "List of most popular movies.",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/MostPopularMoviesListResponseDto" }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/movies/{movieId}": {
+            "get": {
+                "summary": "Get movie detail by movieId in param.",
+                "tags": ["Movies"],
+                "parameters": [{ "in": "path", "name": "movieId", "schema": { "type": "string" }, "required": true }],
+                "responses": {
+                    "200": {
+                        "description": "Movie detail.",
+                        "content": {
+                            "application/json": { "schema": { "$ref": "#/components/schemas/MovieDetailResponseDto" } }
+                        }
+                    },
+                    "404": {
+                        "description": "Movie detail not found.",
+                        "content": {
+                            "application/json": { "schema": { "$ref": "#/components/schemas/MessageResponseDto" } }
+                        }
+                    }
+                }
+            }
+        },
+        "/movies": {
+            "get": {
+                "summary": "Get movies list.",
+                "tags": ["Movies"],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "title",
+                        "schema": { "type": "string" },
+                        "required": true,
+                        "description": "Movie title."
+                    },
+                    {
+                        "in": "query",
+                        "name": "pageNumber",
+                        "schema": { "type": "integer" },
+                        "required": true,
+                        "description": "Page number."
+                    },
+                    {
+                        "in": "query",
+                        "name": "pageSize",
+                        "schema": { "type": "integer" },
+                        "required": true,
+                        "description": "Page Size."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Movies list.",
+                        "content": {
+                            "application/json": { "schema": { "$ref": "#/components/schemas/MoviesListResponseDto" } }
+                        }
+                    }
+                }
+            }
+        },
+        "/ratings": {
+            "post": {
+                "summary": "Rate a movies - both create and update list of ratings",
+                "tags": ["Ratings"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "ratings": {
+                                        "type": "array",
+                                        "items": { "$ref": "#/components/schemas/RatingDtoRequest" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successfully saved ratings",
+                        "content": {
+                            "application/json": { "schema": { "$ref": "#/components/schemas/MessageResponseDto" } }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": { "schema": { "$ref": "#/components/schemas/MessageResponseDto" } }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "summary": "Get paginated list of ratings sorted by title, ratedAt and releaseDate.",
+                "tags": ["Ratings"],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "title",
+                        "schema": { "type": "string" },
+                        "required": true,
+                        "description": "Movie title."
+                    },
+                    {
+                        "in": "query",
+                        "name": "pageNumber",
+                        "schema": { "type": "integer" },
+                        "required": true,
+                        "description": "Page number."
+                    },
+                    {
+                        "in": "query",
+                        "name": "pageSize",
+                        "schema": { "type": "integer" },
+                        "required": true,
+                        "description": "Page Size."
+                    },
+                    {
+                        "in": "query",
+                        "name": "sortBy",
+                        "schema": { "type": "string", "enum": ["title", "ratedAt", "releaseDate", "rating"] },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "sortOrder",
+                        "schema": { "type": "string", "enum": ["asc", "desc"] },
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully  deleted rating",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/UserRatingsListResponseDto" }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ratings/{ratingId}": {
+            "put": {
+                "summary": "Update single rating by ratingId in param and ratingId and rating in body. - unused but kept for future use",
+                "tags": ["Ratings"],
+                "parameters": [{ "in": "path", "name": "ratingId", "schema": { "type": "string" }, "required": true }],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["ratingId", "rating"],
+                                "properties": { "ratingId": { "type": "string" }, "rating": { "type": "integer" } }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Successfully updated rating",
+                        "content": {
+                            "application/json": { "schema": { "$ref": "#/components/schemas/MessageResponseDto" } }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": { "schema": { "$ref": "#/components/schemas/MessageResponseDto" } }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete single rating by ratingId in param. - unused but kept for future use",
+                "tags": ["Ratings"],
+                "parameters": [{ "in": "path", "name": "ratingId", "schema": { "type": "string" }, "required": true }],
+                "responses": {
+                    "204": {
+                        "description": "Successfully deleted rating",
+                        "content": {
+                            "application/json": { "schema": { "$ref": "#/components/schemas/MessageResponseDto" } }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": { "schema": { "$ref": "#/components/schemas/MessageResponseDto" } }
+                        }
+                    }
+                }
+            }
+        },
+        "/ratings/deleteAll": {
+            "delete": {
+                "summary": "Delete all user ratings at once.",
+                "tags": ["Ratings"],
+                "responses": {
+                    "204": {
+                        "description": "Successfully  deleted rating",
+                        "content": {
+                            "application/json": { "schema": { "$ref": "#/components/schemas/MessageResponseDto" } }
+                        }
+                    }
+                }
+            }
+        },
+        "/ratings/info": {
+            "get": {
+                "summary": "Get info about user ratings.",
+                "tags": ["Ratings"],
+                "responses": {
+                    "200": {
+                        "description": "User Ratings info",
+                        "content": {
+                            "application/json": { "schema": { "$ref": "#/components/schemas/UserRatingsInfoDto" } }
+                        }
+                    }
+                }
+            }
+        },
+        "/recommendations": {
+            "get": {
+                "summary": "Get list of recommended movies",
+                "tags": ["Recommendations"],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "k",
+                        "schema": { "type": "number" },
+                        "required": true,
+                        "description": "Number of movies to return."
+                    },
+                    {
+                        "in": "query",
+                        "name": "type",
+                        "schema": { "type": "string", "enum": ["cf", "cb", "hybrid"] },
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of recommended movies.",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/RecommendedMoviesListResponseDto" }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        { "name": "Movies", "description": "Movies API" },
+        { "name": "Ratings", "description": "Ratings API" },
+        { "name": "Recommendations", "description": "Recommendations API" }
+    ]
+}

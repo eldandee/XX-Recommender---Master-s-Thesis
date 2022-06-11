@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "XX Recommender",
+    "slug": "xx-recommender",
+    "orientation": "portrait",
+    "icon": "./src/assets/images/icon.png",
+    "splash": {
+      "image": "./src/assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1F1E3D"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/images/adaptive-icon.png",
+        "backgroundColor": "#1F1E3D"
+      },
+      "softwareKeyboardLayoutMode": "pan",
+      "package": "com.xx"
+    },
+    "backgroundColor": "#1F1E3D",
+    "assetBundlePatterns": [
+      "./src/assets/images/*"
+    ]
+  }
+}
